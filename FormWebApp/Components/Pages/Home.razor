@@ -2,6 +2,68 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Harbor Form</h1>
 
-Welcome to your new app.
+<div class="container">
+    <table class="table">
+        <tr>
+            <td>
+                <label for="country">Negara</label>
+            </td>
+            <td>
+                <input id="country" type="text" class="form-control">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="harbor">Pelabuhan</label>
+            </td>
+            <td>
+                <input id="harbor" type="text" class="form-control">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="stuff">Barang</label>
+            </td>
+            <td>
+                <input id="stuff_id" type="text" class="form-control">
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+                <textarea id="stuff" class="form-control"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="price">Harga</label>
+            </td>
+            <td>
+                <input id="price" type="number" class="form-control">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="rates">Tarif Bea Masuk</label>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input id="rates" type="number" class="form-control" readonly>
+                    <div class="input-group-append">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+                <input id="tariff" type="number" class="form-control" readonly>
+            </td>
+        </tr>
+    </table>
+</div>
