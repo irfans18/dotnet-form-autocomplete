@@ -67,7 +67,7 @@
             <td>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Rp</span>
-                    <input id="tariff" type="number" class="form-control" readonly>
+                    <input id="tariff" type="text" class="form-control" readonly>
                 </div>
             </td>
         </tr>
@@ -75,7 +75,7 @@
 </div>
 
 <script>
-    let isDebug = false
+    const isDebug = false
     // Negara
     $(document).ready(function () {
 
@@ -96,7 +96,7 @@
                     url: API_COUNTRY_URL + encodeURIComponent(term),
                     dataType: "json",
                     success: function (data) {
-                        countries = data.filter(country => country.name.toLowerCase().includes(term));
+                        countries = data.filter(country => country.name.toLowerCase().startsWith(term));
                         response(countries.map(item => item.name.toUpperCase()));
                     }
                 });
@@ -184,7 +184,8 @@
         $('#price').on('input', function () {
             const rates = ratesTextField.val()
             const price = $(this).val()
-            tariffTextField.val((+price) * (+rates) / 100)
+            let formattedTariff = ((+price) * (+rates) / 100).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace('Rp', '');
+            tariffTextField.val(formattedTariff.replace(',00', ''));
             console.log((+price) * (+rates) / 100)
             console.log((+price), (+rates))
         });
