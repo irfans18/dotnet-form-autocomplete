@@ -67,3 +67,35 @@
         </tr>
     </table>
 </div>
+
+<script>
+    let countries
+    let kd_negara, ur_pelabuhan, hs_code, ur_negara, rate
+
+    // Negara
+    $(document).ready(function () {
+        $("#country").autocomplete({
+            source: function (request, response) {
+                let term = request.term.toLowerCase()
+                $.ajax({
+                    url: "https://restcountries.com/v3.1/name/" + encodeURIComponent(term) + "?fields=name,cca2,altSpellings",
+                    dataType: "json",
+                    success: (data) => {
+                        countries = data.filter(country => country.name.common.toLowerCase().includes(term))
+                        response(countries.map(item => item.name.common.toUpperCase()))
+                    }
+                });
+            },
+
+            minLength: 3, // Minimum characters before autocomplete starts
+            select: function (event, ui) {
+                // Handle selection if needed
+                console.log(event.target.value)
+                countries = countries.filter(item => item.name.common.toUpperCase() === event.target.value)[0]
+                kd_negara = countries.cca2
+                console.log(kd_negara)
+            }
+        });
+    });
+
+</script>
