@@ -160,4 +160,22 @@
         });
     });
 
+
+    // Harga
+    $(document).ready(function () {
+        const tariffTextField = $('#tariff')
+        $('#price').on('input', function () {
+            const rates = $('#rates').val()
+            const price = $(this).val()
+            // if (tariffTextField.val().length > 3) {
+            tariffTextField.val((+price) * (+rates))
+            console.log((+price) * (+rates))
+            console.log((+price), (+rates))
+            // }else {
+            //      tariffTextField.val('')
+            //  }
+        });
+    });
+
+
 </script>
