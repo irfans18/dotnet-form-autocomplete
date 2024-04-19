@@ -42,7 +42,10 @@
                 <label for="price">Harga</label>
             </td>
             <td>
-                <input id="price" type="number" class="form-control">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Rp</span>
+                    <input id="price" type="number" class="form-control">
+                </div>
             </td>
         </tr>
         <tr>
@@ -62,120 +65,129 @@
             <td>
             </td>
             <td>
-                <input id="tariff" type="number" class="form-control" readonly>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Rp</span>
+                    <input id="tariff" type="number" class="form-control" readonly>
+                </div>
             </td>
         </tr>
     </table>
 </div>
 
 <script>
-    let countries
-    let kd_negara, ur_pelabuhan, hs_code, ur_negara, rate
-
     // Negara
     $(document).ready(function () {
-        $("#country").autocomplete({
+        let kd_negara, ur_pelabuhan, hs_code, ur_negara, rate;
+
+        let API_HARBOR_URL;
+        const BASE_URL = "https://insw-dev.ilcs.co.id/n/"
+    @* const BASE_URL = "http://localhost:3000/" *@
+        const API_COUNTRY_URL = BASE_URL + "negara?ur_negara="
+        let API_STUFF_URL = BASE_URL + "barang?hs_code="
+        let API_TARIFF_URL = BASE_URL + "tarif?hs_code="
+
+        let countries;
+
+        $('#country').autocomplete({
             source: function (request, response) {
-                let term = request.term.toLowerCase()
+                let term = request.term;
+                console.log((term))
                 $.ajax({
-                    url: "https://restcountries.com/v3.1/name/" + encodeURIComponent(term) + "?fields=name,cca2,altSpellings",
+                    url: API_COUNTRY_URL + encodeURIComponent(term),
                     dataType: "json",
-                    success: (data) => {
-                        countries = data.filter(country => country.name.common.toLowerCase().includes(term))
-                        response(countries.map(item => item.name.common.toUpperCase()))
+                    success: function (data) {
+                        countries = data.filter(country => country.name.toLowerCase().includes(term));
+                        response(countries.map(item => item.name.toUpperCase()));
                     }
                 });
             },
-
-            minLength: 3, // Minimum characters before autocomplete starts
+            minLength: 3,
             select: function (event, ui) {
-                // Handle selection if needed
-                console.log(event.target.value)
-                countries = countries.filter(item => item.name.common.toUpperCase() === event.target.value)[0]
-                kd_negara = countries.cca2
+                countries = countries.filter(item => item.name.toUpperCase() === event.target.value)[0];
+                const { kd_negara } = countries
+                API_HARBOR_URL = BASE_URL + "pelabuhan?kd_negara=" + kd_negara + "&ur_pelabuhan="
                 console.log(kd_negara)
+                console.log(API_HARBOR_URL)
             }
         });
-    });
 
-    // Pelabuhan
-    $(document).ready(function () {
-        $("#harbor").autocomplete({
+
+
+        $('#harbor').autocomplete({
             source: function (request, response) {
-                let term = request.term.toLowerCase()
+                let harbors;
+                let term = request.term;
+                console.log((term))
                 $.ajax({
-                    url: "https://restcountries.com/v3.1/name/" + encodeURIComponent(term) + "?fields=name,cca2,altSpellings",
+                    url: API_HARBOR_URL + encodeURIComponent(term),
                     dataType: "json",
-                    success: (data) => {
-                        countries = data.filter(country => country.name.common.toLowerCase().includes(term))
-                        response(countries.map(item => item.name.common.toUpperCase()))
+                    success: function (data) {
+                        harbors = data.filter(item => item.ur_pelabuhan.toLowerCase().includes(term));
+                        response(harbors.map(item => item.ur_pelabuhan.toUpperCase()));
                     }
                 });
             },
-
-
-            minLength: 3, // Minimum characters before autocomplete starts
+            minLength: 3,
             select: function (event, ui) {
-                // Handle selection if needed
                 console.log(event.target.value)
-                countries = countries.filter(item => item.name.common.toUpperCase() === event.target.value)[0]
-                kd_negara = countries.cca2
-                console.log(kd_negara)
             }
         });
-    });
 
-    // Barang
-    $(document).ready(function () {
+        const fetchTariff = () => {
+            return $.ajax({
+                url: API_TARIFF_URL,
+                method: 'GET',
+                dataType: 'json'
+            }).then(function (data) {
+                return data.rate_bea_masuk;
+            }).fail(function (xhr, status, error) {
+                console.error('Gagal mengambil data tarif: ' + error);
+                return 0;
+            });
+        };
+
         const stuffTextArea = $('#stuff')
         const ratesTextField = $('#rates')
         const tariffTextField = $('#tariff')
         const priceTextField = $('#price')
+
         $('#stuff_id').on('input', function () {
             let term = $(this).val();
             if (term.length > 3) {
-                // Make AJAX call to your API
                 $.ajax({
-                    url: "https://restcountries.com/v3.1/name/" + encodeURIComponent(term),
+                    url: API_STUFF_URL + encodeURIComponent(term),
                     method: 'GET',
                     data: { stuff_id: term },
                     success: function (response) {
                         console.log(response)
-                        // Populate the #stuff textarea with the response
-                        stuffTextArea.val(response.map(item => item['altSpellings']));
+                        stuffTextArea.val(response.map(item => item.details));
                         stuffTextArea.prop('readonly', true);
-                        ratesTextField.val(response.map(item => item['population']))
-                        tariffTextField.val((+priceTextField.val()) * (+ratesTextField.val()))
+
+                        fetchTariff().then(rate => {
+                            ratesTextField.val(rate);
+                            tariffTextField.val((+priceTextField.val()) * (+ratesTextField.val()) / 100);
+                        }).catch(error => {
+                            console.error('Error fetching tariff:', error);
+                        });
                     },
                     error: function (xhr, status, error) {
-                        // Handle error
                         console.error(xhr.responseText);
                     }
                 });
             } else {
-                // If stuff_id length is not 8, remove readonly attribute
                 stuffTextArea.prop('readonly', false);
                 stuffTextArea.val("")
             }
         });
-    });
 
-
-    // Harga
-    $(document).ready(function () {
-        const tariffTextField = $('#tariff')
         $('#price').on('input', function () {
-            const rates = $('#rates').val()
+            const rates = ratesTextField.val()
             const price = $(this).val()
-            // if (tariffTextField.val().length > 3) {
-            tariffTextField.val((+price) * (+rates))
-            console.log((+price) * (+rates))
+            tariffTextField.val((+price) * (+rates) / 100)
+            console.log((+price) * (+rates) / 100)
             console.log((+price), (+rates))
-            // }else {
-            //      tariffTextField.val('')
-            //  }
         });
-    });
 
+    });
 
 </script>
