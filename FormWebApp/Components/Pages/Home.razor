@@ -124,4 +124,40 @@
             }
         });
     });
+
+    // Barang
+    $(document).ready(function () {
+        const stuffTextArea = $('#stuff')
+        const ratesTextField = $('#rates')
+        const tariffTextField = $('#tariff')
+        const priceTextField = $('#price')
+        $('#stuff_id').on('input', function () {
+            let term = $(this).val();
+            if (term.length > 3) {
+                // Make AJAX call to your API
+                $.ajax({
+                    url: "https://restcountries.com/v3.1/name/" + encodeURIComponent(term),
+                    method: 'GET',
+                    data: { stuff_id: term },
+                    success: function (response) {
+                        console.log(response)
+                        // Populate the #stuff textarea with the response
+                        stuffTextArea.val(response.map(item => item['altSpellings']));
+                        stuffTextArea.prop('readonly', true);
+                        ratesTextField.val(response.map(item => item['population']))
+                        tariffTextField.val((+priceTextField.val()) * (+ratesTextField.val()))
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error
+                        console.error(xhr.responseText);
+                    }
+                });
+            } else {
+                // If stuff_id length is not 8, remove readonly attribute
+                stuffTextArea.prop('readonly', false);
+                stuffTextArea.val("")
+            }
+        });
+    });
+
 </script>
